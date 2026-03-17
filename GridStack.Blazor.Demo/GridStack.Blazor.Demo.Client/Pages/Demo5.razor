@@ -1,0 +1,111 @@
+@page "/demo5"
+
+<PageTitle>Demo 5: Drag in widget</PageTitle>
+
+<div class="page">
+    <div class="title">
+        <h3>Demo 5: Drag in widget</h3>
+    </div>
+    
+    <div class="header">
+        <div class="grid-stack-item drag-in-item" gs-x="1" gs-y="1" style="height: 40px; width: 40px; border: 2px solid black;">
+            New Item
+        </div>
+        <div class="grid-stack-item" gs-x="1" gs-y="1" style="height: 40px; width: 120px; border: 2px solid black;">
+            Does not have required class
+        </div>
+        <div class="grid-stack-item drag-in-item" gs-x="1" gs-y="1" style="height: 40px; width: 120px; border: 2px solid black;">
+            Does not have required content
+        </div>
+    </div>
+
+    <div class="grid-wrapper">
+        <div class="grid-enabled">
+
+            <GsGrid @ref="@_grid"
+                Options="@_gsGridOptions"
+                    OptionsOnDragStart="OnDraggableStart"
+                    OptionsOnDrag="OnDraggableDrag"
+                    OptionsOnDragStop="OnDraggableStop"
+                SetUpDragInOptions="@_dragInSettings" SetUpDragIn="true">
+            </GsGrid>
+
+        </div>
+    </div>
+
+</div>
+
+@code {
+    private readonly GsGridOptions _gsGridOptions = new()
+    {
+        Float = true,
+        MaxRow = 6,
+        MinRow = 1,
+        ColumnOpts = new GsResponsive()
+        {
+            BreakpointForWindow = false,
+            Breakpoints =
+            [
+                new GsBreakpoint()
+                {
+                    W = 1200,
+                    C = 6,
+                },
+                new GsBreakpoint()
+                {
+                    W = 900,
+                    C = 4,
+                },
+                new GsBreakpoint()
+                {
+                    W = 600,
+                    C = 3,
+                },
+                new GsBreakpoint()
+                {
+                    W = 400,
+                    C = 1,
+                    Layout = GsColumn.List
+                }
+            ]
+        },
+        AcceptWidgets = "function",
+        AcceptWidgetCallback = AcceptWidgets
+    };
+
+    private readonly GsSetupDragInSettings _dragInSettings = new()
+    {
+        DragIn = ".drag-in-item"
+    };
+
+    private GsGrid _grid = null!;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+    }
+
+    private void OnDraggableStart(GsUIDataEventArgs args)
+    {
+        Console.WriteLine("Start dragging.");
+    }
+
+    private void OnDraggableDrag(GsUIDataEventArgs args)
+    {
+        Console.WriteLine("Dragging.");
+    }
+
+    private void OnDraggableStop()
+    {
+        Console.WriteLine("Stop dragging.");
+    }
+
+    private static bool AcceptWidgets(GsHtmlElement element)
+    {
+        if (element.InnerHtml is null || !element.InnerHtml.Contains("New Item"))
+        {
+            return false;
+        }
+
+        return true;
+    }
+}

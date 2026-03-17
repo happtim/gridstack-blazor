@@ -1,3 +1,4 @@
+using Microsoft.JSInterop;
 using System.Text.Json.Serialization;
 
 namespace GridStack.Blazor;
@@ -8,8 +9,19 @@ namespace GridStack.Blazor;
  */
 public sealed record GsGridOptions
 {
-    // TODO - acceptWidgets
-    
+    /// <summary>
+    /// Accept widgets dragged from other grids or from outside (default: false). Can be:
+    /// <list type="bullet">true: will accept HTML elements having 'grid-stack-item' as class attribute</list>
+    /// <list type="bullet">false: will not accept any external widgets</list>
+    /// <list type="bullet">string: explicit class name to accept instead of default</list>
+    /// <list type="bullet">function: set to 'function', and fill out the accept widget callback function.</list>
+    /// </summary>
+    [JsonPropertyName("acceptWidgets")]
+    public string? AcceptWidgets { get; set; }
+
+    [JsonIgnore]
+    public Func<GsHtmlElement, bool>? AcceptWidgetCallback { get; set; }
+
     /// <summary>
     /// Does not apply to non-resizable widgets. Possible values:
     /// - false: the resizing handles are only shown while hovering over a widget
@@ -98,7 +110,7 @@ public sealed record GsGridOptions
     /// (default: { handle?: '.grid-stack-item-content', appendTo?: 'body' })
     /// </summary>
     [JsonPropertyName("draggable")]
-    public GsDraggableOptions? Draggable { get; set; }
+    public GsDraggableOptions Draggable { get; set; } = new();
 
     // TODO - engineClass
     
@@ -217,22 +229,17 @@ public sealed record GsGridOptions
     /// If `true` will add style element to `head` otherwise will add it to element's
     /// parent node (default `false`). 
     /// </summary>
+    [Obsolete("Not used anymore, styles are now implemented with local CSS variables")]
     [JsonPropertyName("styleInHead")]
     public bool? StyleInHead { get; set; }
-    
-    // TODO - subGridOpts
-    
-    //  TODO - subGridDynamic
-}
 
-public sealed record GsDraggableOptions
-{
-    [JsonPropertyName("appendTo")]
-    public string? AppendTo { get; set; }
-    
-    [JsonPropertyName("handle")]
-    public string? Handle { get; set; }
-    
-    [JsonPropertyName("scroll")]
-    public bool? Scroll { get; set; }
+    // TODO - subGridOpts
+
+    // TODO - subGridDynamic
+
+    [JSInvokable]
+    public bool AcceptWidgetCallbackFired(GsHtmlElement el)
+    {
+        return AcceptWidgetCallback!.Invoke(el);
+    }
 }

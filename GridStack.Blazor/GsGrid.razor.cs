@@ -11,7 +11,21 @@ public sealed partial class GsGrid : IAsyncDisposable
 
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
-    [Parameter] public GsGridOptions? Options { get; set; }
+    [Parameter] public GsGridOptions Options { get; set; } = new();
+
+    [Parameter] public EventCallback OptionsOnDragStop { get; set; }
+
+    [Parameter] public EventCallback<GsUIDataEventArgs> OptionsOnDragStart { get; set; }
+
+    [Parameter] public EventCallback<GsUIDataEventArgs> OptionsOnDrag { get; set; }
+
+    [Parameter] public bool SetUpDragIn { get; set; } = false;
+
+    [Parameter] public string Id { get; set; } = Guid.NewGuid().ToString();
+
+    [Parameter] public bool MultipleGrids { get; set; } = false;
+
+    [Parameter] public GsSetupDragInSettings? SetUpDragInOptions { get; set; }
 
     [Parameter] public string? Style { get; set; }
 
@@ -44,6 +58,8 @@ public sealed partial class GsGrid : IAsyncDisposable
     private IJSObjectReference? _module;
     private IJSObjectReference? _instance;
     private DotNetObjectReference<GsGrid>? _interopRef;
+    private DotNetObjectReference<GsGridOptions>? _optionsInteropRef;
+    private DotNetObjectReference<GsDraggableOptions>? _draggableInteropRef;
 
     private const string PackageName = "Itemzen.GridStack.Blazor";
     
@@ -57,7 +73,27 @@ public sealed partial class GsGrid : IAsyncDisposable
                 "import", $"./_content/{PackageName}/gridstack_interop.js");
 
             _interopRef = DotNetObjectReference.Create(this);
-            _instance = await _module.InvokeAsync<IJSObjectReference>("init", Options, _interopRef);
+            _optionsInteropRef = DotNetObjectReference.Create(Options);
+
+            if (MultipleGrids)
+            {
+                _instance = await _module.InvokeAsync<IJSObjectReference>("addGrid", Id, Options, _interopRef, _optionsInteropRef);
+            }
+            else
+            {
+                _instance = await _module.InvokeAsync<IJSObjectReference>("init", Options, _interopRef, _optionsInteropRef);
+            }
+
+            if (SetUpDragIn)
+            {
+                Options.Draggable.OnStop = OptionsOnDragStop;
+                Options.Draggable.OnStart = OptionsOnDragStart;
+                Options.Draggable.OnDrag = OptionsOnDrag;
+
+                _draggableInteropRef = DotNetObjectReference.Create(Options.Draggable);
+
+                await _module.InvokeAsync<IJSObjectReference>("setupDragIn", SetUpDragInOptions?.DragIn, Options.Draggable, SetUpDragInOptions?.Widgets, _draggableInteropRef, Options, _optionsInteropRef);
+            }
 
             await OnLoaded.InvokeAsync();
         }
@@ -65,11 +101,11 @@ public sealed partial class GsGrid : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (_interopRef != null)
-        {
-            _interopRef.Dispose();
-            _interopRef = null;
-        }
+        _interopRef?.Dispose();
+        _interopRef = null;
+
+        _draggableInteropRef?.Dispose();
+        _draggableInteropRef = null;
 
         if (_instance != null)
         {
@@ -249,6 +285,11 @@ public sealed partial class GsGrid : IAsyncDisposable
     public async Task<bool> WillItFit(GsWidgetOptions opts)
     {
         return await _instance!.InvokeAsync<bool>("willItFit", opts);
+    }
+
+    public async Task SetAllowDrop(bool value)
+    {
+        await _instance!.InvokeVoidAsync("setAllowDrop", value);
     }
 
     [JSInvokable]
