@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "GridStack.Blazor.Demo\\GridStack.Blazor.Demo\\GridStack.Blazor.Demo.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "GridStack.Blazor.Demo\\GridStack.Blazor.Demo.Client\\GridStack.Blazor.Demo.Client.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

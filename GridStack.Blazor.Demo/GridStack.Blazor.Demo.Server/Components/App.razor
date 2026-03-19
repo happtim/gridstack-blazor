@@ -9,13 +9,13 @@
 
     <link href="lib/gridstack.min.css" rel="stylesheet"/>
 
-    <link rel="stylesheet" href="GridStack.Blazor.Demo.styles.css"/>
+    <link rel="stylesheet" href="GridStack.Blazor.Demo.Server.styles.css"/>
     <link rel="icon" type="image/png" href="favicon.png"/>
-    <HeadOutlet @rendermode="InteractiveAuto"/>
+    <HeadOutlet @rendermode="InteractiveServer"/>
 </head>
 
 <body>
-    <Routes @rendermode="InteractiveAuto"/>
+    <Routes @rendermode="InteractiveServer" />
     <script src="lib/gridstack-all.js"></script>
     <script src="_framework/blazor.web.js"></script>
 </body>

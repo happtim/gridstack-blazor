@@ -1,11 +1,11 @@
 namespace GridStack.Blazor;
 
-public sealed class GsWidgetEventArgs
+public sealed class GsUIDataEventArgs
 {
-    internal GsWidgetEventArgs(GsWidgetData widget)
+    internal GsUIDataEventArgs(GsUIData widget)
     {
-        Widget = widget;
+        UIData = widget;
     }
 
-    public GsWidgetData Widget { get; private set; }
+    public GsUIData UIData { get; private set; }
 }
